@@ -26,39 +26,21 @@ module ledcontrol
   input       BTN5,
   input       BTN6,
 
-  //外呼灯
-  input       LED0_in,
-  input       LED1_in,
-  input       LED2_in,
-  input       LED3_in,
-
   output reg  LED0,
   output reg  LED1,
   output reg  LED2,
   output reg  LED3,
-  
-  //内呼灯
-  input       LED6_in,
-  input       LED7_in,
-  input       LED8_in,
 
   output reg  LED6,
   output reg  LED7,
-  output reg  LED8
+  output reg  LED8,
+
+  input       open,
+  input [4:0] out_state,
+  input       LED4_R,
+  input       LED4_G,
+  input       LED4_B
 );
-
-  reg  LED0_reg;
-  reg  LED1_reg;
-  reg  LED2_reg;
-  reg  LED3_reg;
-  reg  LED6_reg;
-  reg  LED7_reg;
-  reg  LED8_reg;
-
-  always@(posedge clk or negedge rstn) begin 
-    if(!rstn)  LED0_reg <= 1'b0;
-    else       LED0_reg <= LED0_in;
-  end
 
   always@(posedge clk or negedge rstn) begin 
     if(!rstn) begin
@@ -67,16 +49,11 @@ module ledcontrol
     else if(BTN0) begin
       LED0 <= 1'b1;
     end
-    else if(LED0_reg == 1'b0 && LED0_in == 1'b1) begin
+    else if(open & ((out_state == 4'd2) | (out_state == 4'd8)) & LED4_R) begin
       LED0 <= 1'b0;
     end
     else 
       LED0 <= LED0;
-  end
-
-  always@(posedge clk or negedge rstn) begin 
-    if(!rstn)  LED1_reg <= 1'b0;
-    else       LED1_reg <= LED1_in;
   end
 
   always@(posedge clk or negedge rstn) begin 
@@ -86,16 +63,11 @@ module ledcontrol
     else if(BTN1) begin
       LED1 <= 1'b1;
     end
-    else if(LED1_reg == 1'b0 && LED1_in == 1'b1) begin
+    else if(open & LED4_G & (((out_state == 4'd3) & LED1) | (out_state == 4'd8) | ((out_state == 4'd7) & (!LED2) & (!LED3) & LED7))) begin
       LED1 <= 1'b0;
     end
     else 
       LED1 <= LED1;
-  end
-
-  always@(posedge clk or negedge rstn) begin 
-    if(!rstn)  LED2_reg <= 1'b0;
-    else       LED2_reg <= LED2_in;
   end
 
   always@(posedge clk or negedge rstn) begin 
@@ -105,16 +77,11 @@ module ledcontrol
     else if(BTN2) begin
       LED2 <= 1'b1;
     end
-    else if(LED2_reg == 1'b0 && LED2_in == 1'b1) begin
+    else if(open & LED4_G & (((out_state == 4'd3) & LED2) | (out_state == 4'd7))) begin
       LED2 <= 1'b0;
     end
     else 
       LED2 <= LED2;
-  end
-
-  always@(posedge clk or negedge rstn) begin 
-    if(!rstn)  LED3_reg <= 1'b0;
-    else       LED3_reg <= LED3_in;
   end
 
   always@(posedge clk or negedge rstn) begin 
@@ -124,16 +91,11 @@ module ledcontrol
     else if(BTN3) begin
       LED3 <= 1'b1;
     end
-    else if(LED3_reg == 1'b0 && LED3_in == 1'b1) begin
+    else if(open & LED4_B & ((out_state == 4'd4) | (out_state == 4'd7))) begin
       LED3 <= 1'b0;
     end
     else 
       LED3 <= LED3;
-  end
-
-  always@(posedge clk or negedge rstn) begin 
-    if(!rstn)  LED6_reg <= 1'b1;
-    else       LED6_reg <= LED6_in;
   end
 
   always@(posedge clk or negedge rstn) begin 
@@ -143,16 +105,11 @@ module ledcontrol
     else if(BTN4) begin
       LED6 <= 1'b0;
     end
-    else if(LED6_reg == 1'b1 && LED6_in == 1'b0) begin
+    else if(open & LED4_R & (out_state == 4'd8)) begin
       LED6 <= 1'b1;
     end
     else 
       LED6 <= LED6;
-  end
-
-  always@(posedge clk or negedge rstn) begin 
-    if(!rstn)  LED7_reg <= 1'b1;
-    else       LED7_reg <= LED7_in;
   end
 
   always@(posedge clk or negedge rstn) begin 
@@ -162,16 +119,11 @@ module ledcontrol
     else if(BTN5) begin
       LED7 <= 1'b0;
     end
-    else if(LED7_reg == 1'b1 && LED7_in == 1'b0) begin
+    else if(open & LED4_G & ((out_state == 4'd7) | (out_state == 4'd8))) begin
       LED7 <= 1'b1;
     end
     else 
       LED7 <= LED7;
-  end
-
-  always@(posedge clk or negedge rstn) begin 
-    if(!rstn)  LED8_reg <= 1'b1;
-    else       LED8_reg <= LED8_in;
   end
 
   always@(posedge clk or negedge rstn) begin 
@@ -181,7 +133,7 @@ module ledcontrol
     else if(BTN6) begin
       LED8 <= 1'b0;
     end
-    else if(LED8_reg == 1'b1 && LED8_in == 1'b0) begin
+    else if(open & LED4_B) begin
       LED8 <= 1'b1;
     end
     else 

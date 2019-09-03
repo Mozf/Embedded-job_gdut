@@ -12,31 +12,27 @@
 //==============================================================================
 module fsm
 #(
-  parameter  STATE = 4,
-  localparam SIDLE = STATE'd0,
-  localparam S1    = STATE'd1,
-  localparam S2    = STATE'd2,
-  localparam S3    = STATE'd3,
-  localparam S4    = STATE'd4,
-  localparam S5    = STATE'd5,
-  localparam S6    = STATE'd6,
-  localparam S7    = STATE'd7,
-  localparam S8    = STATE'd8,
-  localparam S9    = STATE'd9,
-  localparam S10   = STATE'd10,
-  localparam S11   = STATE'd11,
-  localparam S12   = STATE'd12，
-  localparam S13   = STATE'd13
+  parameter STATE = 4,
+  parameter SIDLE = 4'd0,
+  parameter S1    = 4'd1,
+  parameter S2    = 4'd2,
+  parameter S3    = 4'd3,
+  parameter S4    = 4'd4,
+  parameter S5    = 4'd5,
+  parameter S6    = 4'd6,
+  parameter S7    = 4'd7,
+  parameter S8    = 4'd8,
+  parameter S9    = 4'd9,
+  parameter S10   = 4'd10,
+  parameter S11   = 4'd11,
+  parameter S12   = 4'd12,
+  parameter S13   = 4'd13
 )
 (
   input                 clk,
   input                 rstn,
 
   //位置接收信号
-  input                 red1_reg,
-  input                 red2_reg,
-  input                 red3_reg,
-
   input                 red1_up,
   input                 red2_up,
   input                 red3_up,
@@ -48,46 +44,34 @@ module fsm
   output reg            down,
   output reg            up,
 
-  //外呼灯
+  //外呼�????
   input                 LED0_in,
   input                 LED1_in,
   input                 LED2_in,
   input                 LED3_in,
   
-  //内呼灯
+  //内呼�????
   input                 LED6_in,
   input                 LED7_in,
   input                 LED8_in,
 
-  //楼层灯
+  //楼层�????
   output reg            LED4_R,
   output reg            LED4_G,
   output reg            LED4_B,
   
-  //状态灯
+  //状�?�灯
   output reg            LED5_G,
   output reg            LED5_B,
 
   input                 close,
-  output reg            open
+  output reg            open,
 
-  output reg  [STATE:0] out_state;
+  output reg  [STATE:0] out_state
 );
 
   reg  [STATE:0] current_state;
   reg  [STATE:0] next_state;
-
-  always@(posedge clk or negedge rstn) begin 
-    if(!rstn) begin
-      out_state <= 4'd0;
-    end
-    else if(current_state != out_state) begin
-      out_state <= current_state;
-    end
-    else begin
-      out_state <= out_state;
-    end
-  end
 
   always @(posedge clk or negedge rstn) begin
     if(!rstn) 
@@ -102,14 +86,8 @@ module fsm
       SIDLE:begin
         if(!rstn) 
           next_state = SIDLE;
-        else if(red1_reg)
-          next_state = S13;
-        else if(red2_reg || red3_reg)
+        else 
           next_state = S1;
-        else if(!red1_reg || !red2_reg || !red3_reg)
-          next_state = s1;
-        else
-          next_state = SIDLE;
       end
 
       S1:begin
@@ -125,9 +103,9 @@ module fsm
         if(!rstn)
           next_state = SIDLE;
         else begin
-          if(LED0_in)
+          if(LED0_in | (!LED6_in))
             next_state = S5;
-          else if(LED1_in || LED2_in || LED3_in)
+          else if(LED1_in | LED2_in | LED3_in | (!LED7_in) | (!LED8_in))
             next_state = S7;
           else
             next_state = S2;
@@ -138,11 +116,11 @@ module fsm
         if(!rstn)
           next_state = SIDLE;
         else begin
-          if(LED1_in || LED2_in)
+          if(LED1_in | LED2_in | (!LED7_in))
             next_state = S5;
-          else if(LED3_in)
+          else if(LED3_in | (!LED6_in))
             next_state = S7;
-          else if(LED0_in)
+          else if(LED0_in | (!LED8_in))
             next_state = S8;
           else
             next_state = S3;
@@ -153,9 +131,9 @@ module fsm
         if(!rstn)
           next_state = SIDLE;
         else begin
-          if(LED3_in)
+          if(LED3_in | (!LED8_in))
             next_state = S5;
-          else if(LED0_in || LED1_in || LED2_in)
+          else if(LED0_in | LED1_in | LED2_in | (!LED6_in) | (!LED7_in))
             next_state = S8;
           else
             next_state = S4;
@@ -174,89 +152,76 @@ module fsm
       S6:begin
         if(!rstn)
           next_state = SIDLE;
-        else if(LED4_G && LED2_in && !LED0_in && !LED3_in)
+        else if((LED4_R & (LED0_in | (!LED6_in))) | (LED4_G & (LED1_in | LED2_in | (!LED7_in))) | (LED4_B & (LED3_in|| (!LED8_in))))
           next_state = S5;
-        else if((LED4_R && (LED0_in || LED6_in)) || (LED4_G && (LED1_in || LED2_in || LED7_in)) || (LED4_B && (LED3_in || LED8_in)))
-          next_state = S5;
-        else if((LED4_R && (LED1_in || LED2_in || LED3_in || LED7_in || LED8_in)) || (LED4_G && (LED3_in || LED8_in)))
+        else if((LED4_R & (LED1_in | LED2_in | LED3_in | (!LED7_in) | (!LED8_in))) | (LED4_G & (LED3_in | (!LED8_in))))
           next_state = S7;
-        else if((LED4_B && (LED0_in || LED1_in || LED2_in || LED6_in || LED7_in)) || (LED4_G && (LED0_in || LED6_in)))
+        else if((LED4_B & (LED0_in | LED1_in | LED2_in | (!LED6_in) | (!LED7_in))) | (LED4_G & (LED0_in | (!LED6_in))))
           next_state = S8;
+        else
+          next_state = S6;
       end
 
       S7: begin
         if(LED4_R) begin
-          if(LED2_in || LED7_in) begin
-            if(red2_up)
-              next_state = S9;
-            else
-              next_state = S7;
-          end
-          else if(LED3_in || LED8_in) begin
-            if(red3_up)
-              next_state = S10;
-            else
-              next_state = S7;
-          end
-          else 
-            next_state = SIDLE;
-        end
+          if((LED1_in | LED2_in | (!LED7_in)) & red2_up) 
+            next_state = S9;
+          else if(LED1_in | LED2_in | (!LED7_in))
+            next_state = S7;
+          else if((LED3_in | (!LED8_in)) & red3_up)
+            next_state = S10;
+          else if(LED3_in | (!LED8_in))
+            next_state = S7;
+          else
+            next_state = S2;
+        end 
         else if(LED4_G) begin
-          if(LED3_in || LED8_in) begin
-            if(red3_up)
-              next_state = S10;
-            else
-              next_state = S7;
-          end
+          if((LED3_in | (!LED8_in)) & red3_up) 
+            next_state = S10;
+          else if(LED3_in | (!LED8_in))
+            next_state = S7;
           else if(LED1_in)
             next_state = S9;
-          else if(LED0_in || LED6_in) 
+          else if(LED0_in | (!LED6_in)) 
             next_state = S8;
           else
             next_state = S3;
         end
         else if(LED4_B) begin
-          if(LED0_in || LED1_in || LED1_in || LED6_in || LED7_in)
+          if(LED0_in | LED1_in | LED2_in | (!LED6_in) | (!LED7_in))
             next_state = S8;
           else
             next_state = S4;
         end
       end
       
-
       S8: begin
         if(LED4_B) begin
-          if(LED1_in || LED7_in) begin
-            if(red2_down)
-              next_state = S11;
-            else
-              next_state = S8;
-          end
-          else if(LED0_in || LED6_in) begin
-            if(red1_down)
-              next_state = S12;
-            else
-              next_state = S8;
-          end
+          if((LED1_in | (!LED7_in)) & red2_down)
+            next_state = S11;
+          else if(LED1_in | (!LED7_in))
+            next_state = S8;
+          else if((LED0_in | (!LED6_in)) & red1_down)
+            next_state = S12;
+          else if(LED0_in | (!LED6_in))
+            next_state = S8;
           else
             next_state = SIDLE;
         end
         else if(LED4_G) begin
-          if(LED0_in || LED6_in) begin
-            if(red1_down)
-              next_state = S12;
-            else
-              next_state = S8;
-          end
+          if((LED0_in | (!LED6_in)) & red1_down)
+            next_state = S12;
+          else if(LED0_in | (!LED6_in))
+            next_state = S8;
           else if(LED2_in)
             next_state = S11;
-          else if(LED3_in || LED8_in)
+          else if(LED3_in | (!LED8_in))
             next_state = S7;
           else 
             next_state = S3;
         end
         else if(LED4_R) begin
-          if(LED1_in || LED2_in || LED3_in || LED7_in || LED8_in)
+          if(LED1_in | LED2_in | LED3_in | (!LED7_in) | (!LED8_in))
             next_state = S7;
           else
             next_state = S2;
@@ -337,22 +302,29 @@ module fsm
         LED4_B <= 1'b0;
         LED5_G <= 1'b0;
         LED5_B <= 1'b0;
+        out_state <= 4'd2;
       end
 
       S3:begin
+        up     <= 1'b0;
+        down   <= 1'b0;
         LED4_R <= 1'b0;
         LED4_G <= 1'b1;
         LED4_B <= 1'b0;
         LED5_G <= 1'b0;
         LED5_B <= 1'b0;
+        out_state <= 4'd3;
       end
 
       S4:begin
+        up     <= 1'b0;
+        down   <= 1'b0;
         LED4_R <= 1'b0;
         LED4_G <= 1'b0;
         LED4_B <= 1'b1;
         LED5_G <= 1'b0;
         LED5_B <= 1'b0;
+        out_state <= 4'd4;
       end
 
       S5:begin
@@ -368,6 +340,11 @@ module fsm
         open   <= 1'b0;
         LED5_B <= 1'b1;
         LED5_G <= 1'b0;
+        out_state <= 4'd7;
+        if(red2_up) begin
+          LED4_R <= 1'b0;
+          LED4_G <= 1'b1;
+        end
       end
 
       S8: begin
@@ -375,6 +352,11 @@ module fsm
         open   <= 1'b0;
         LED5_B <= 1'b0;
         LED5_G <= 1'b1;
+        out_state <= 4'd8;
+        if(red2_down) begin
+          LED4_B <= 1'b0;
+          LED4_G <= 1'b1;
+        end
       end
 
       S9: begin
@@ -417,7 +399,6 @@ module fsm
         up <= 1'b1;
       end
 
-      default:next_state = SIDLE;
     endcase
   end
 

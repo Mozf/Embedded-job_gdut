@@ -27,11 +27,11 @@ module ULN2003
   reg  [3:0]  cnt_speed;
   reg  [1:0]  fsm;
 
-  always@(posedge clk or negedge rstn) begin //10 * 100 = 1000 ns = 1us
+  always@(posedge clk or negedge rstn) begin //100 * 10 = 1000 ns = 1us
     if(!rstn) begin
       cnt100 <= 7'd0;
     end
-    else if(cnt100 == 7'd99) begin
+    else if(cnt100 == 7'd9) begin
       cnt100 <= 7'd0;
     end
     else begin
@@ -46,7 +46,7 @@ module ULN2003
     else if(cnt1000 == 10'd999) begin
       cnt1000 <= 10'd0;
     end
-    else if(cnt100 == 7'd99) begin
+    else if(cnt100 == 7'd9) begin
       cnt1000 <= cnt1000 + 1'b1;
     end
   end
@@ -56,7 +56,7 @@ module ULN2003
       cnt_speed <= 4'd0;
       fsm <= 2'b00;
     end
-    else if(cnt_speed == 4'd5) begin
+    else if(cnt_speed == 4'd4) begin
       if(up) begin
         cnt_speed <= 4'd0;
         fsm <= fsm + 1'b1;

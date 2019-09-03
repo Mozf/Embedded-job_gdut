@@ -12,8 +12,7 @@
 //==============================================================================
 module top
 (
-  input         clk,
-
+  input         sysclk,
   //reset
   input         SW0,
 
@@ -46,16 +45,35 @@ module top
   output        LED7,
   output        LED8,
 
-  output  [3:0] INgogo
+  output  [3:0] INgogo,
+
+  inout [14:0]  DDR_addr,
+  inout [2:0]   DDR_ba,
+  inout         DDR_cas_n,
+  inout         DDR_ck_n,
+  inout         DDR_ck_p,
+  inout         DDR_cke,
+  inout         DDR_cs_n,
+  inout [3:0]   DDR_dm,
+  inout [31:0]  DDR_dq,
+  inout [3:0]   DDR_dqs_n,
+  inout [3:0]   DDR_dqs_p,
+  inout         DDR_odt,
+  inout         DDR_ras_n,
+  inout         DDR_reset_n,
+  inout         DDR_we_n,
+  inout         FIXED_IO_ddr_vrn,
+  inout         FIXED_IO_ddr_vrp,
+  inout [53:0]  FIXED_IO_mio,
+  inout         FIXED_IO_ps_clk,
+  inout         FIXED_IO_ps_porb,
+  inout         FIXED_IO_ps_srstb
 );
 
-  wire        clk;
+  wire        clk1;
   wire        rstn;
 
   //redcatch-fsm
-  wire r      ed1_reg;
-  wire        red2_reg;
-  wire        red3_reg;
   wire        red1_up;
   wire        red2_up;
   wire        red3_up;
@@ -93,12 +111,8 @@ module top
 
   fsm fsm_inst_0
   (
-    .clk       ( clk         ),
+    .clk       ( clk1        ),
     .rstn      ( rstn        ),
-
-    .red1_reg  ( red1_reg    ),
-    .red2_reg  ( red2_reg    ),
-    .red3_reg  ( red3_reg    ),
 
     .red1_up   ( red1_up    ),
     .red2_up   ( red2_up    ),
@@ -134,23 +148,19 @@ module top
 
   reset reset_0
   (
-    .clk    ( clk        ),
+    .clk    ( clk1       ),
     .SW0    ( SW0        ),
     .rstn   ( rstn       )
   );
 
   redcatch redcatch_inst_0
   (
-    .clk        ( clk        ),
+    .clk        ( clk1       ),
     .rstn       ( rstn       ),
 
     .red1_in    ( red1       ),
     .red2_in    ( red2       ),
     .red3_in    ( red3       ),
-
-    .red1_reg   ( red1_reg   ),
-    .red2_reg   ( red2_reg   ),
-    .red3_reg   ( red3_reg   ),
 
     .red1_up    ( red1_up    ),
     .red2_up    ( red2_up    ),
@@ -163,7 +173,7 @@ module top
 
   btncontrol btncontrol_inst_0
   (
-    .clk        ( clk        ),
+    .clk        ( clk1       ),
     .rstn       ( rstn       ),
 
     .BTN0       ( BTN0       ),
@@ -185,7 +195,7 @@ module top
 
   ledcontrol ledcontrol_inst_0
   (
-    .clk        ( clk        ),
+    .clk        ( clk1       ),
     .rstn       ( rstn       ),
 
     .BTN0       ( BTN0_b_l   ),
@@ -196,53 +206,72 @@ module top
     .BTN5       ( BTN5_b_l   ),
     .BTN6       ( BTN6_b_l   ),
 
-    .LED0_in    ( LED0_lc_od ),
-    .LED1_in    ( LED1_lc_od ),
-    .LED2_in    ( LED2_lc_od ),
-    .LED3_in    ( LED3_lc_od ),
-    .LED6_in    ( LED6_lc_od ),
-    .LED7_in    ( LED7_lc_od ),
-    .LED8_in    ( LED8_lc_od ),
-
     .LED0       ( LED0       ),
     .LED1       ( LED1       ),
     .LED2       ( LED2       ),
     .LED3       ( LED3       ),
     .LED6       ( LED6       ),
     .LED7       ( LED7       ),
-    .LED8       ( LED8       )
+    .LED8       ( LED8       ),
+
+    .open       ( open       ),
+    .out_state  ( out_state  ),
+    .LED4_R     ( LED4_R     ),
+    .LED4_G     ( LED4_G     ),
+    .LED4_B     ( LED4_B     )
   );
 
   opendoor opendoor_inst_0
   (
-    .clk        ( clk        ),
+    .clk        ( clk1       ),
     .rstn       ( rstn       ),
 
     .open       ( open       ),
-    
-    .out_state  ( out_state  ),
 
     .close      ( close      ),
-
-    .LED0       ( LED0_lc_od ),
-    .LED1       ( LED1_lc_od ),
-    .LED2       ( LED2_lc_od ),
-    .LED3       ( LED3_lc_od ),
-    .LED5       ( LED5_R     ),
-    .LED6       ( LED6_lc_od ),
-    .LED7       ( LED7_lc_od ),
-    .LED8       ( LED8_lc_od )
+    .LED5_R     ( LED5_R     )
   );
 
   ULN2003 ULN2003_inst_0
   (
-    .clk        ( clk        ),
+    .clk        ( clk1       ),
     .rstn       ( rstn       ),
 
     .up         ( up         ),
     .down       ( down       ),
 
     .INgogo     ( INgogo     )
+  );
+
+  clk_wiz_0 clk_wiz_0_inst_0
+  (
+    .clk_in1    ( sysclk     ),
+    .clk_out1   ( clk1       )
+  );
+
+  design_1_wrapper design_1_wrapper_0
+  ( 
+    .DDR_addr           ( DDR_addr          ),
+    .DDR_ba             ( DDR_ba            ),
+    .DDR_cas_n          ( DDR_cas_n         ),
+    .DDR_ck_n           ( DDR_ck_n          ),
+    .DDR_ck_p           ( DDR_ck_p          ),
+    .DDR_cke            ( DDR_cke           ),
+    .DDR_cs_n           ( DDR_cs_n          ),
+    .DDR_dm             ( DDR_dm            ),
+    .DDR_dq             ( DDR_dq            ),
+    .DDR_dqs_n          ( DDR_dqs_n         ),
+    .DDR_dqs_p          ( DDR_dqs_p         ),
+    .DDR_odt            ( DDR_odt           ),
+    .DDR_ras_n          ( DDR_ras_n         ),
+    .DDR_reset_n        ( DDR_reset_n       ),
+    .DDR_we_n           ( DDR_we_n          ),
+    .FIXED_IO_ddr_vrn   ( FIXED_IO_ddr_vrn  ),
+    .FIXED_IO_ddr_vrp   ( FIXED_IO_ddr_vrp  ),
+    .FIXED_IO_mio       ( FIXED_IO_mio      ),
+    .FIXED_IO_ps_clk    ( FIXED_IO_ps_clk   ),
+    .FIXED_IO_ps_porb   ( FIXED_IO_ps_porb  ),
+    .FIXED_IO_ps_srstb  ( FIXED_IO_ps_srstb )
   );
 
 endmodule
