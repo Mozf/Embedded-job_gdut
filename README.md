@@ -49,7 +49,7 @@ This is my homework.
 
 三楼：red3。
 
-红海外有东西就0，没有就1
+红外有东西就0，没有就1
 
 7. 电机控制信号{up,down,stop}。
 
